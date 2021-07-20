@@ -1,10 +1,12 @@
 from matplotlib import pyplot as plt
 from random import sample
+from utils import train_test_split
 import os
 
 
+cat_fd = 'Dataset/PetImages/Cat/'
+
 def explore_cat_data():
-    cat_fd = 'Dataset/PetImages/Cat/'
     _, _, cat_images = next(os.walk(cat_fd))
 
     fig, ax = plt.subplots(3,3, figsize=(20, 10))
@@ -17,5 +19,9 @@ def explore_cat_data():
     plt.show()
 
 
+train_test_split(cat_fd)
+
+
 if __name__ == '__main__':
-    explore_cat_data()
+    # explore_cat_data()
+    pass
