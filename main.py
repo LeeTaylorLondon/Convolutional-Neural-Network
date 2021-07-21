@@ -1,27 +1,40 @@
 from matplotlib import pyplot as plt
 from random import sample
 from utils import train_test_split
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
 
 
-cat_fd = 'Dataset/PetImages/Cat/'
+fd = 'Dataset/PetImages/'
 
-def explore_cat_data():
-    _, _, cat_images = next(os.walk(cat_fd))
+def explore_data(folder, verbose=True):
+    _, _, images = next(os.walk(fd + folder))
+    if verbose:
+        fig, ax = plt.subplots(3,3, figsize=(20, 10))
 
-    fig, ax = plt.subplots(3,3, figsize=(20, 10))
+        for idx, img in enumerate(sample(images, 9)):
+            img_read = plt.imread(fd + folder + img)
+            ax[int(idx/3), idx%3].imshow(img_read)
+            ax[int(idx/3), idx%3].axis('off')
+            ax[int(idx/3), idx%3].set_title(folder+img)
+        plt.show()
+    return images
 
-    for idx, img in enumerate(sample(cat_images, 9)):
-        img_read = plt.imread(cat_fd + img)
-        ax[int(idx/3), idx%3].imshow(img_read)
-        ax[int(idx/3), idx%3].axis('off')
-        ax[int(idx/3), idx%3].set_title('Cat/'+img)
-    plt.show()
 
+train_test_split('Dataset/PetImages')
 
-train_test_split(cat_fd)
+image_generator = ImageDataGenerator(rotation_range=30,
+                                     width_shift_range=0.2,
+                                     height_shift_range=0.2,
+                                     zoom_range=0.2,
+                                     horizontal_flip=True,
+                                     fill_mode='nearest')
+
+fig, ax = plt.subplots(2,3, figsize=(20,10))
+# all_images = []
 
 
 if __name__ == '__main__':
-    # explore_cat_data()
+    cat_images = explore_data('Cat/')
+    dog_images = explore_data('Dog/')
     pass
