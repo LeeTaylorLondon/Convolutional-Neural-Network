@@ -26,6 +26,7 @@ image_generator = ImageDataGenerator(rotation_range=30,
                                      fill_mode='nearest')
 
 def explore_data(folder, verbose=True):
+    """ Print 9 random images from a directory """
     _, _, images = next(os.walk(fd + folder))
     if verbose:
         fig, ax = plt.subplots(3,3, figsize=(20, 10))
@@ -39,17 +40,26 @@ def explore_data(folder, verbose=True):
     return images
 
 def data_preprocessing():
+    """ Pipeline training and testing set into image generator
+    for augmentation. Modifying the image. """
     training_data_generator = ImageDataGenerator(rescale=1. / 255)
     training_set = training_data_generator. \
         flow_from_directory('Dataset/PetImages/Train/',
                             target_size=(INPUT_SIZE, INPUT_SIZE),
                             batch_size=BATCH_SIZE,
                             class_mode='binary')
-    return training_set
+    testing_data_generator = ImageDataGenerator(rescale=1. / 255)
+    testing_set = testing_data_generator. \
+               flow_from_directory('Dataset/PetImages/Test/',
+                                   target_size=(INPUT_SIZE,INPUT_SIZE),
+                                   batch_size=BATCH_SIZE,
+                                   class_mode = 'binary')
 
-def build_model():
+    return training_set, testing_set
+
+def build_model(verbose=False):
+    """  """
     model = Sequential()
-
     model.add(Conv2D(NUM_FILTERS, (FILTER_SIZE, FILTER_SIZE),
                      input_shape=(INPUT_SIZE, INPUT_SIZE, 3),
                      activation='relu'))
@@ -61,9 +71,17 @@ def build_model():
     model.add(Dense(units=1, activation='sigmoid'))
     model.compile(optimizer='adam', loss='binary_crossentropy',
                   metrics=['accuracy'])
+    if verbose: model.summary()
+    return model
 
-
-
+def evaluate_model(test_set, trained_model, verbose=True):
+    rv = []
+    score = trained_model.evaluate_generator(test_set, steps=len(test_set))
+    for idx, metric in enumerate(trained_model.metrics_names):
+        metric_str = f"{metric}:{score[idx]}"
+        rv.append(metric_str)
+        if verbose: print(f"{metric}:{score[idx]}")
+    return rv
 
 
 if __name__ == '__main__':
@@ -72,4 +90,13 @@ if __name__ == '__main__':
     """ Data exploration functions to view random images in the folders """
     # cat_images = explore_data('Cat/')
     # dog_images = explore_data('Dog/')
+    """ Load data and build model """
+    training_set, testing_set = data_preprocessing()
+    model = build_model()
+    """ Train and test model """
+    model.fit_generator(training_set,steps_per_epoch=STEPS_PER_EPOCH,
+                        epochs=EPOCHS, verbose=1)
+    evaluate_model(testing_set, model)
+
+
     pass
